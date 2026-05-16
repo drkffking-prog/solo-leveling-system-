@@ -1,3 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solo Leveling System</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+:root{
+  --cyan:#00d4ff;
+  --orange:#ff6600;
+  --blue:#0ea5e9;
+  --dark:#020617;
+  --card:#0f172a;
+  --border:#1e293b;
+  --muted:#94a3b8;
+  --green:#00ff88;
+  --purple:#a855f7;
+}
+
+body{
+  background:var(--dark);
+  color:white;
+  font-family:'Rajdhani',sans-serif;
+  overflow-x:hidden;
+}
+
+/* SCANLINE OVERLAY */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,212,255,0.015) 2px,rgba(0,212,255,0.015) 4px);
+  pointer-events:none;
+  z-index:9999;
+}
+
+.container{
+  max-width:480px;
+  margin:auto;
+  min-height:100vh;
+  padding-bottom:50px;
+}
+
+/* ANIMATED BACKGROUND */
+.bg{
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  background:#020617;
+}
+.bg::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(ellipse at 80% 10%,rgba(0,212,255,0.15),transparent 50%),
+    radial-gradient(ellipse at 10% 90%,rgba(255,102,0,0.12),transparent 50%),
+    radial-gradient(ellipse at 50% 50%,rgba(168,85,247,0.05),transparent 60%);
+  animation:bgPulse 8s ease-in-out infinite alternate;
+}
+.bg::after{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,212,255,0.03) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+
+@keyframes bgPulse{
+  0%{opacity:0.6;}
+  100%{opacity:1;}
+}
+
+/* PARTICLES */
+.particles{
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  overflow:hidden;
+  pointer-events:none;
+}
+.particle{
+  position:absolute;
+  width:2px;
+  height:2px;
+  border-radius:50%;
+  background:var(--cyan);
+  animation:float linear infinite;
+  opacity:0;
+}
+@keyframes float{
+  0%{transform:translateY(100vh) translateX(0);opacity:0;}
+  10%{opacity:1;}
+  90%{opacity:0.5;}
+  100%{transform:translateY(-100px) translateX(var(--dx));opacity:0;}
+}
+
+/* ===== SETUP WIZARD ===== */
+.setup{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  padding:20px;
+}
+
+.logo-wrap{
+  text-align:center;
+  margin-bottom:30px;
+  animation:logoIn 1s ease both;
+}
+@keyframes logoIn{
+  from{opacity:0;transform:translateY(-30px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+.logo-glyph{
+  font-family:'Orbitron',sans-serif;
+  font-size:48px;
+  font-weight:900;
+  background:linear-gradient(135deg,var(--cyan),var(--purple),var(--orange));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  text-shadow:none;
+  letter-spacing:2px;
+  line-height:1;
+}
+
+.logo-sub{
+  font-family:'Share Tech Mono',monospace;
+  font-size:11px;
+  letter-spacing:6px;
+  color:var(--orange);
+  margin-top:6px;
+  text-transform:uppercase;
+}
+
+/* STEP CARD */
+.step-card{
+  width:100%;
+  background:rgba(15,23,42,0.95);
+  border:1px solid rgba(0,212,255,0.3);
+  padding:28px 24px;
+  border-radius:20px;
+  box-shadow:
+    0 0 40px rgba(0,212,255,0.1),
+    0 0 80px rgba(0,212,255,0.05),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+  animation:cardIn 0.5s ease both;
+  position:relative;
+  overflow:hidden;
+}
+.step-card::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:2px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  animation:scanline 3s linear infinite;
+}
+@keyframes scanline{
+  0%{transform:translateX(-100%);}
+  100%{transform:translateX(100%);}
+}
+@keyframes cardIn{
+  from{opacity:0;transform:translateY(20px) scale(0.97);}
+  to{opacity:1;transform:translateY(0) scale(1);}
+}
+
+/* STEP INDICATOR */
+.step-indicator{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  margin-bottom:24px;
+}
+.step-dot{
+  width:8px;height:8px;
+  border-radius:50%;
+  background:var(--border);
+  border:1px solid #334155;
+  transition:all 0.3s;
+}
+.step-dot.active{
+  background:var(--cyan);
+  box-shadow:0 0 8px var(--cyan);
+}
+.step-dot.done{
+  background:var(--green);
+  box-shadow:0 0 6px var(--green);
+}
+
+/* STEP HEADER */
+.step-header{
+  margin-bottom:20px;
+}
+.step-num{
+  font-family:'Share Tech Mono',monospace;
+  font-size:11px;
+  color:var(--cyan);
+  letter-spacing:3px;
+  margin-bottom:4px;
+}
+.step-title{
+  font-family:'Orbitron',sans-serif;
+  font-size:20px;
+  font-weight:700;
+  color:white;
+}
+.step-desc{
+  font-size:13px;
+  color:var(--muted);
+  margin-top:4px;
+  font-family:'Share Tech Mono',monospace;
+}
+
+/* INPUTS */
+.field{
+  margin-bottom:16px;
+}
+.field-label{
+  font-family:'Share Tech Mono',monospace;
+  font-size:11px;
+  color:var(--cyan);
+  letter-spacing:2px;
+  text-transform:uppercase;
+  margin-bottom:6px;
+  display:block;
+}
+.inp{
+  width:100%;
+  padding:14px 16px;
+  background:rgba(2,6,23,0.8);
+  border:1px solid #334155;
+  border-radius:10px;
+  color:white;
+  font-size:16px;
+  font-family:'Rajdhani',sans-serif;
+  font-weight:600;
+  outline:none;
+  transition:all 0.3s;
+}
+.inp:focus{
+  border-color:var(--cyan);
+  box-shadow:0 0 12px rgba(0,212,255,0.2);
+}
+.inp::placeholder{color:#334155;}
+select.inp option{background:#0f172a;}
+
+/* OPTION GRID */
+.opt-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:4px;
+}
+.opt-grid.three{
+  grid-template-columns:1fr 1fr 1fr;
+}
+.opt-btn{
+  padding:12px 8px;
+  border:1px solid #334155;
+  border-radius:10px;
+  background:rgba(2,6,23,0.8);
+  color:var(--muted);
+  font-family:'Rajdhani',sans-serif;
+  font-weight:700;
+  font-size:14px;
+  cursor:pointer;
+  transition:all 0.25s;
+  text-align:center;
+}
+.opt-btn:hover{border-color:var(--cyan);color:white;}
+.opt-btn.selected{
+  border-color:var(--cyan);
+  background:rgba(0,212,255,0.1);
+  color:var(--cyan);
+  box-shadow:0 0 10px rgba(0,212,255,0.15);
+}
+
+/* INLINE UNIT FIELD */
+.unit-field{
+  display:flex;
+  gap:8px;
+}
+.unit-field .inp{flex:1;}
+.unit-tag{
+  display:flex;
+  align-items:center;
+  padding:0 14px;
+  background:rgba(0,212,255,0.08);
+  border:1px solid rgba(0,212,255,0.3);
+  border-radius:10px;
+  color:var(--cyan);
+  font-family:'Share Tech Mono',monospace;
+  font-size:13px;
+  white-space:nowrap;
+}
+
+/* BUTTONS */
+.btn-row{
+  display:flex;
+  gap:10px;
+  margin-top:20px;
+}
+.btn{
+  flex:1;
+  padding:15px;
+  border:none;
+  border-radius:12px;
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  font-size:13px;
+  cursor:pointer;
+  transition:all 0.25s;
+  letter-spacing:1px;
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--cyan),var(--blue));
+  color:#020617;
+  box-shadow:0 4px 20px rgba(0,212,255,0.3);
+}
+.btn-primary:hover{
+  box-shadow:0 4px 30px rgba(0,212,255,0.5);
+  transform:translateY(-1px);
+}
+.btn-ghost{
+  background:transparent;
+  border:1px solid #334155;
+  color:var(--muted);
+}
+.btn-ghost:hover{border-color:#475569;color:white;}
+.btn-awaken{
+  background:linear-gradient(135deg,#ff6600,#ff4400);
+  color:white;
+  box-shadow:0 4px 20px rgba(255,102,0,0.4);
+  font-size:15px;
+  letter-spacing:3px;
+}
+.btn-awaken:hover{
+  box-shadow:0 4px 40px rgba(255,102,0,0.6);
+  transform:translateY(-2px);
+}
+
+/* PROFILE PREVIEW (step final) */
+.profile-preview{
+  background:rgba(0,212,255,0.04);
+  border:1px solid rgba(0,212,255,0.15);
+  border-radius:12px;
+  padding:16px;
+  margin-bottom:16px;
+}
+.profile-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:8px 0;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  font-size:14px;
+}
+.profile-row:last-child{border-bottom:none;}
+.profile-key{
+  color:var(--muted);
+  font-family:'Share Tech Mono',monospace;
+  font-size:11px;
+  letter-spacing:1px;
+}
+.profile-val{
+  color:white;
+  font-weight:700;
+  color:var(--cyan);
+}
+
+/* ===== MAIN APP ===== */
+.main{display:none;}
+
+/* HEADER */
+.header{
+  padding:20px;
+  background:rgba(15,23,42,0.95);
+  border-bottom:1px solid rgba(0,212,255,0.15);
+  position:relative;
+  overflow:hidden;
+}
+.header::after{
+  content:'';
+  position:absolute;
+  bottom:0;left:0;right:0;
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+}
+
+.header-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  margin-bottom:12px;
+}
+
+.hunter-name{
+  font-family:'Orbitron',sans-serif;
+  font-size:22px;
+  font-weight:900;
+  letter-spacing:1px;
+}
+
+.header-stats{
+  text-align:right;
+}
+
+.rank-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 14px;
+  border-radius:8px;
+  background:linear-gradient(135deg,#ff6600,#ff4400);
+  font-weight:700;
+  font-size:13px;
+  letter-spacing:2px;
+  box-shadow:0 0 15px rgba(255,102,0,0.4);
+}
+
+.day-text{
+  margin-top:6px;
+  color:var(--muted);
+  font-family:'Share Tech Mono',monospace;
+  font-size:12px;
+}
+
+/* XP BAR */
+.xp-wrap{
+  margin-top:12px;
+}
+.xp-label{
+  display:flex;
+  justify-content:space-between;
+  font-family:'Share Tech Mono',monospace;
+  font-size:10px;
+  color:var(--muted);
+  margin-bottom:4px;
+}
+.xp-bar{
+  width:100%;
+  height:6px;
+  background:rgba(30,41,59,0.8);
+  border-radius:20px;
+  overflow:hidden;
+}
+.xp-fill{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,var(--cyan),var(--purple));
+  border-radius:20px;
+  transition:width 1s ease;
+  box-shadow:0 0 8px var(--cyan);
+}
+
+/* HUNTER PROFILE STRIP */
+.profile-strip{
+  display:flex;
+  gap:8px;
+  padding:12px 15px;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.profile-strip::-webkit-scrollbar{display:none;}
+.profile-chip{
+  flex-shrink:0;
+  background:rgba(15,23,42,0.8);
+  border:1px solid rgba(0,212,255,0.15);
+  border-radius:8px;
+  padding:8px 12px;
+  text-align:center;
+  min-width:70px;
+}
+.chip-label{
+  font-family:'Share Tech Mono',monospace;
+  font-size:9px;
+  color:var(--muted);
+  letter-spacing:1px;
+}
+.chip-val{
+  font-weight:700;
+  font-size:15px;
+  color:var(--cyan);
+  margin-top:2px;
+}
+
+/* STATS GRID */
+.stats{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  padding:15px;
+}
+.stat{
+  background:rgba(15,23,42,0.8);
+  padding:16px;
+  border-radius:15px;
+  border:1px solid var(--border);
+  position:relative;
+  overflow:hidden;
+  transition:border-color 0.3s;
+}
+.stat:hover{border-color:rgba(0,212,255,0.3);}
+.stat::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:2px;
+  background:linear-gradient(90deg,var(--cyan),var(--purple));
+  opacity:0.5;
+}
+.stat-icon{
+  font-size:20px;
+  margin-bottom:4px;
+}
+.stat-title{
+  font-family:'Share Tech Mono',monospace;
+  font-size:10px;
+  color:var(--muted);
+  letter-spacing:2px;
+}
+.stat-value{
+  font-family:'Orbitron',sans-serif;
+  font-size:26px;
+  font-weight:900;
+  margin-top:4px;
+  background:linear-gradient(135deg,white,var(--cyan));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+
+/* SECTION TITLE */
+.section-title{
+  padding:0 15px;
+  margin-top:14px;
+  font-family:'Orbitron',sans-serif;
+  font-size:14px;
+  letter-spacing:2px;
+  color:var(--cyan);
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.section-title::after{
+  content:'';
+  flex:1;
+  height:1px;
+  background:linear-gradient(90deg,rgba(0,212,255,0.3),transparent);
+}
+
+/* QUESTS */
+.quest-list{padding:15px;}
+.quest{
+  background:rgba(15,23,42,0.8);
+  padding:16px;
+  border-radius:15px;
+  margin-bottom:12px;
+  border:1px solid var(--border);
+  transition:all 0.3s;
+  position:relative;
+  overflow:hidden;
+}
+.quest.done-quest{
+  border-color:rgba(0,255,136,0.3);
+  background:rgba(0,255,136,0.03);
+}
+.quest-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.quest-name{
+  font-family:'Orbitron',sans-serif;
+  font-size:14px;
+  font-weight:700;
+  letter-spacing:1px;
+}
+.quest-badge{
+  font-family:'Share Tech Mono',monospace;
+  font-size:10px;
+  padding:3px 8px;
+  border-radius:4px;
+  background:rgba(0,212,255,0.1);
+  border:1px solid rgba(0,212,255,0.2);
+  color:var(--cyan);
+}
+.quest-progress{
+  margin-top:8px;
+  font-size:13px;
+  color:var(--muted);
+  font-family:'Share Tech Mono',monospace;
+}
+.quest-bar{
+  height:6px;
+  background:rgba(30,41,59,0.8);
+  border-radius:20px;
+  overflow:hidden;
+  margin-top:8px;
+}
+.quest-fill{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,var(--cyan),var(--blue));
+  border-radius:20px;
+  transition:width 0.5s ease;
+  box-shadow:0 0 6px var(--cyan);
+}
+.quest-fill.full{background:linear-gradient(90deg,var(--green),#00cc66);}
+.quest-actions{
+  display:flex;
+  gap:8px;
+  margin-top:12px;
+}
+.quest-btn{
+  padding:9px 14px;
+  border:none;
+  border-radius:8px;
+  background:rgba(255,102,0,0.15);
+  border:1px solid rgba(255,102,0,0.3);
+  color:var(--orange);
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  font-size:11px;
+  cursor:pointer;
+  transition:all 0.25s;
+}
+.quest-btn:hover{
+  background:rgba(255,102,0,0.25);
+  box-shadow:0 0 10px rgba(255,102,0,0.2);
+}
+.quest-btn.big{
+  background:rgba(0,212,255,0.1);
+  border-color:rgba(0,212,255,0.3);
+  color:var(--cyan);
+}
+
+/* COMPLETE BTN */
+.complete-btn{
+  margin:10px 15px 20px;
+  width:calc(100% - 30px);
+  padding:18px;
+  border:none;
+  border-radius:15px;
+  background:linear-gradient(135deg,#00ff88,#00cc66);
+  font-family:'Orbitron',sans-serif;
+  font-size:14px;
+  font-weight:900;
+  color:#020617;
+  cursor:pointer;
+  display:none;
+  letter-spacing:3px;
+  box-shadow:0 4px 30px rgba(0,255,136,0.4);
+  animation:pulseGreen 2s ease infinite;
+}
+@keyframes pulseGreen{
+  0%,100%{box-shadow:0 4px 30px rgba(0,255,136,0.4);}
+  50%{box-shadow:0 4px 50px rgba(0,255,136,0.7);}
+}
+
+/* VIDEO */
+.video-box{padding:15px;}
+.video-title{
+  font-family:'Orbitron',sans-serif;
+  font-size:13px;
+  letter-spacing:2px;
+  color:var(--cyan);
+  margin-bottom:10px;
+}
+iframe{border-radius:15px;border:1px solid var(--border);}
+
+/* POPUP */
+.popup{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.85);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+  z-index:999;
+  backdrop-filter:blur(4px);
+}
+.popup-card{
+  background:#0f172a;
+  padding:32px 28px;
+  border-radius:24px;
+  text-align:center;
+  max-width:340px;
+  width:100%;
+  border:1px solid rgba(0,255,136,0.3);
+  box-shadow:0 0 60px rgba(0,255,136,0.15);
+  animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes popIn{
+  from{opacity:0;transform:scale(0.7);}
+  to{opacity:1;transform:scale(1);}
+}
+.popup-icon{font-size:48px;margin-bottom:12px;}
+.popup-title{
+  font-size:26px;
+  font-family:'Orbitron',sans-serif;
+  color:var(--green);
+  margin-bottom:8px;
+  text-shadow:0 0 20px rgba(0,255,136,0.5);
+}
+.popup-sub{color:var(--muted);font-size:14px;margin-bottom:8px;}
+.popup-xp{
+  font-family:'Orbitron',sans-serif;
+  font-size:32px;
+  color:var(--cyan);
+  font-weight:900;
+  margin:12px 0;
+}
+.popup-btn{
+  margin-top:16px;
+  padding:14px 24px;
+  width:100%;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(135deg,var(--cyan),var(--blue));
+  color:#020617;
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  font-size:13px;
+  cursor:pointer;
+  letter-spacing:2px;
+}
+
+/* RESET BTN */
+.reset-btn{
+  display:block;
+  margin:0 auto 20px;
+  padding:8px 20px;
+  border:1px solid #334155;
+  border-radius:8px;
+  background:transparent;
+  color:#475569;
+  font-family:'Share Tech Mono',monospace;
+  font-size:11px;
+  cursor:pointer;
+  letter-spacing:1px;
+}
+.reset-btn:hover{border-color:#ef4444;color:#ef4444;}
+
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="particles" id="particles"></div>
+<div class="container">
+
+<!-- ===== SETUP WIZARD ===== -->
+<div class="setup" id="setup">
+
+  <div class="logo-wrap">
+    <div class="logo-glyph">SOLO<br>LEVELING</div>
+    <div class="logo-sub">⬡ Hunter Registration System ⬡</div>
+  </div>
+
+  <!-- STEP 1: Identity -->
+  <div class="step-card" id="step1">
+    <div class="step-indicator">
+      <div class="step-dot active" id="dot1"></div>
+      <div class="step-dot" id="dot2"></div>
+      <div class="step-dot" id="dot3"></div>
+      <div class="step-dot" id="dot4"></div>
+      <div class="step-dot" id="dot5"></div>
+    </div>
+    <div class="step-header">
+      <div class="step-num">STEP 01 / 05</div>
+      <div class="step-title">HUNTER IDENTITY</div>
+      <div class="step-desc">> Enter your designation, soldier.</div>
+    </div>
+    <div class="field">
+      <label class="field-label">Hunter Name</label>
+      <input class="inp" id="inp_name" type="text" placeholder="e.g. Sung Jin-Woo" maxlength="20">
+    </div>
+    <div class="field">
+      <label class="field-label">Age</label>
+      <input class="inp" id="inp_age" type="number" placeholder="e.g. 20" min="10" max="99">
+    </div>
+    <div class="field">
+      <label class="field-label">Sex</label>
+      <div class="opt-grid three">
+        <button class="opt-btn" onclick="selectOpt(this,'sex','Male')">♂ MALE</button>
+        <button class="opt-btn" onclick="selectOpt(this,'sex','Female')">♀ FEMALE</button>
+        <button class="opt-btn" onclick="selectOpt(this,'sex','Other')">◈ OTHER</button>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="goStep(2)">NEXT →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Physical Stats -->
+  <div class="step-card" id="step2" style="display:none;">
+    <div class="step-indicator">
+      <div class="step-dot done" id="dot1b"></div>
+      <div class="step-dot active" id="dot2b"></div>
+      <div class="step-dot" id="dot3b"></div>
+      <div class="step-dot" id="dot4b"></div>
+      <div class="step-dot" id="dot5b"></div>
+    </div>
+    <div class="step-header">
+      <div class="step-num">STEP 02 / 05</div>
+      <div class="step-title">PHYSICAL STATS</div>
+      <div class="step-desc">> System scanning your vessel...</div>
+    </div>
+    <div class="field">
+      <label class="field-label">Height</label>
+      <div class="unit-field">
+        <input class="inp" id="inp_height" type="number" placeholder="175" min="100" max="250">
+        <div class="unit-tag">CM</div>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">Weight</label>
+      <div class="unit-field">
+        <input class="inp" id="inp_weight" type="number" placeholder="70" min="30" max="300">
+        <div class="unit-tag">KG</div>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">Body Type</label>
+      <div class="opt-grid">
+        <button class="opt-btn" onclick="selectOpt(this,'body','Ectomorph')">🔹 ECTO</button>
+        <button class="opt-btn" onclick="selectOpt(this,'body','Mesomorph')">⚡ MESO</button>
+        <button class="opt-btn" onclick="selectOpt(this,'body','Endomorph')">🔶 ENDO</button>
+        <button class="opt-btn" onclick="selectOpt(this,'body','Athletic')">💠 ATHLETIC</button>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="goStep(1)">← BACK</button>
+      <button class="btn btn-primary" onclick="goStep(3)">NEXT →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Combat Style -->
+  <div class="step-card" id="step3" style="display:none;">
+    <div class="step-indicator">
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot active"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+    </div>
+    <div class="step-header">
+      <div class="step-num">STEP 03 / 05</div>
+      <div class="step-title">CLASS & STYLE</div>
+      <div class="step-desc">> Choose your combat specialization.</div>
+    </div>
+    <div class="field">
+      <label class="field-label">Fitness Goal</label>
+      <div class="opt-grid">
+        <button class="opt-btn" onclick="selectOpt(this,'goal','Muscle Gain')">💪 BUILD</button>
+        <button class="opt-btn" onclick="selectOpt(this,'goal','Fat Loss')">🔥 CUT</button>
+        <button class="opt-btn" onclick="selectOpt(this,'goal','Endurance')">⚡ ENDURE</button>
+        <button class="opt-btn" onclick="selectOpt(this,'goal','Overall')">🌀 ALL</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">Experience Level</label>
+      <div class="opt-grid three">
+        <button class="opt-btn" onclick="selectOpt(this,'exp','Beginner')">E-RANK</button>
+        <button class="opt-btn" onclick="selectOpt(this,'exp','Intermediate')">C-RANK</button>
+        <button class="opt-btn" onclick="selectOpt(this,'exp','Advanced')">S-RANK</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">Preferred Training</label>
+      <div class="opt-grid">
+        <button class="opt-btn" onclick="selectOpt(this,'train','Gym')">🏋️ GYM</button>
+        <button class="opt-btn" onclick="selectOpt(this,'train','Home')">🏠 HOME</button>
+        <button class="opt-btn" onclick="selectOpt(this,'train','Outdoor')">🌿 OUTDOOR</button>
+        <button class="opt-btn" onclick="selectOpt(this,'train','Mixed')">⚔️ MIXED</button>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="goStep(2)">← BACK</button>
+      <button class="btn btn-primary" onclick="goStep(4)">NEXT →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: Health & Lifestyle -->
+  <div class="step-card" id="step4" style="display:none;">
+    <div class="step-indicator">
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot active"></div>
+      <div class="step-dot"></div>
+    </div>
+    <div class="step-header">
+      <div class="step-num">STEP 04 / 05</div>
+      <div class="step-title">LIFESTYLE DATA</div>
+      <div class="step-desc">> System analyzing your habits...</div>
+    </div>
+    <div class="field">
+      <label class="field-label">Sleep Hours (per night)</label>
+      <div class="opt-grid three">
+        <button class="opt-btn" onclick="selectOpt(this,'sleep','< 5hrs')">☠️ &lt;5H</button>
+        <button class="opt-btn" onclick="selectOpt(this,'sleep','6-7hrs')">😴 6-7H</button>
+        <button class="opt-btn" onclick="selectOpt(this,'sleep','8+ hrs')">⚡ 8+H</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">Diet Type</label>
+      <div class="opt-grid">
+        <button class="opt-btn" onclick="selectOpt(this,'diet','Standard')">🍖 STANDARD</button>
+        <button class="opt-btn" onclick="selectOpt(this,'diet','Vegetarian')">🥦 VEGGIE</button>
+        <button class="opt-btn" onclick="selectOpt(this,'diet','Vegan')">🌱 VEGAN</button>
+        <button class="opt-btn" onclick="selectOpt(this,'diet','Keto')">🥑 KETO</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">Daily Activity Level</label>
+      <div class="opt-grid three">
+        <button class="opt-btn" onclick="selectOpt(this,'activity','Sedentary')">💤 LOW</button>
+        <button class="opt-btn" onclick="selectOpt(this,'activity','Moderate')">🚶 MID</button>
+        <button class="opt-btn" onclick="selectOpt(this,'activity','Active')">🏃 HIGH</button>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="goStep(3)">← BACK</button>
+      <button class="btn btn-primary" onclick="goStep(5)">NEXT →</button>
+    </div>
+  </div>
+
+  <!-- STEP 5: Confirm & Awaken -->
+  <div class="step-card" id="step5" style="display:none;">
+    <div class="step-indicator">
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot active"></div>
+    </div>
+    <div class="step-header">
+      <div class="step-num">STEP 05 / 05</div>
+      <div class="step-title">HUNTER PROFILE</div>
+      <div class="step-desc">> Confirm your data before awakening.</div>
+    </div>
+    <div class="profile-preview" id="profilePreview"></div>
+    <button class="btn btn-awaken" onclick="awaken()" style="width:100%;padding:18px;">
+      ⚡ AWAKEN ⚡
+    </button>
+    <div class="btn-row" style="margin-top:10px;">
+      <button class="btn btn-ghost" onclick="goStep(4)">← EDIT</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== MAIN APP ===== -->
+<div class="main" id="main">
+
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="hunter-name" id="hunterName">HUNTER</div>
+        <div class="rank-badge" id="rankText">⬡ E-RANK</div>
+      </div>
+      <div class="header-stats">
+        <div class="day-text" id="dayText">DAY 1 / 60</div>
+        <div style="margin-top:6px;font-family:'Orbitron',sans-serif;font-size:11px;color:var(--cyan);" id="levelDisp">LVL 1</div>
+      </div>
+    </div>
+    <div class="xp-wrap">
+      <div class="xp-label">
+        <span>EXP</span>
+        <span id="xpText">0 / 100</span>
+      </div>
+      <div class="xp-bar"><div class="xp-fill" id="xpFill"></div></div>
+    </div>
+  </div>
+
+  <!-- HUNTER INFO STRIP -->
+  <div class="profile-strip" id="profileStrip"></div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-icon">🥩</div>
+      <div class="stat-title">PROTEIN TARGET</div>
+      <div class="stat-value" id="proteinStat">140g</div>
+    </div>
+    <div class="stat">
+      <div class="stat-icon">💧</div>
+      <div class="stat-title">WATER TARGET</div>
+      <div class="stat-value">3L</div>
+    </div>
+    <div class="stat">
+      <div class="stat-icon">🔥</div>
+      <div class="stat-title">COMPLETION</div>
+      <div class="stat-value" id="completionStat">0%</div>
+    </div>
+    <div class="stat">
+      <div class="stat-icon">⚡</div>
+      <div class="stat-title">LEVEL</div>
+      <div class="stat-value" id="levelText">1</div>
+    </div>
+  </div>
+
+  <div class="section-title">DAILY QUESTS</div>
+  <div class="quest-list" id="questList"></div>
+
+  <button class="complete-btn" id="completeBtn" onclick="completeDay()">
+    ✦ COMPLETE DAY ✦
+  </button>
+
+  <div class="video-box">
+    <div class="video-title">◈ DAILY MOTIVATION</div>
+    <iframe width="100%" height="220"
+      src="https://www.youtube.com/embed/RoypGYAxD0c"
+      frameborder="0" allowfullscreen></iframe>
+  </div>
+
+  <button class="reset-btn" onclick="resetSystem()">[ RESET HUNTER DATA ]</button>
+
+</div>
+</div>
+
+<!-- POPUP -->
+<div class="popup" id="popup">
+  <div class="popup-card">
+    <div class="popup-icon">⚡</div>
+    <div class="popup-title">QUEST CLEARED</div>
+    <div class="popup-sub">Daily mission accomplished, Hunter.</div>
+    <div class="popup-xp" id="popupXP">+100 XP</div>
+    <div style="color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:11px;" id="popupLevel"></div>
+    <button class="popup-btn" onclick="closePopup()">▶ CONTINUE</button>
+  </div>
+</div>
+
+<script>
+// =================== STATE ===================
+let profile = {};
+let selectedOpts = {};
+let currentStep = 1;
+
+let state = {
+  day:1, level:1, xp:0,
+  quests:{pushups:0,situps:0,squats:0,running:0,plank:0}
+};
+
+const targets = {pushups:100,situps:100,squats:100,running:10,plank:3};
+const questMeta = {
+  pushups:{icon:'💪',unit:'reps',label:'PUSH-UPS'},
+  situps:{icon:'🔥',unit:'reps',label:'SIT-UPS'},
+  squats:{icon:'🦵',unit:'reps',label:'SQUATS'},
+  running:{icon:'🏃',unit:'km',label:'RUNNING'},
+  plank:{icon:'⏱',unit:'min',label:'PLANK'}
+};
+
+// =================== PARTICLES ===================
+(function(){
+  const wrap = document.getElementById('particles');
+  for(let i=0;i<20;i++){
+    const p = document.createElement('div');
+    p.className='particle';
+    p.style.left = Math.random()*100+'%';
+    p.style.animationDuration = (10+Math.random()*20)+'s';
+    p.style.animationDelay = (Math.random()*20)+'s';
+    p.style.setProperty('--dx',(Math.random()*200-100)+'px');
+    p.style.width = p.style.height = (Math.random()<0.5?2:3)+'px';
+    if(Math.random()<0.3) p.style.background='#ff6600';
+    if(Math.random()<0.2) p.style.background='#a855f7';
+    wrap.appendChild(p);
+  }
+})();
+
+// =================== WIZARD ===================
+function selectOpt(el, group, value){
+  const parent = el.parentElement;
+  parent.querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedOpts[group] = value;
+}
+
+function goStep(n){
+  // Validate current step
+  if(n===2){
+    if(!document.getElementById('inp_name').value.trim()){
+      shake('inp_name'); return;
+    }
+    if(!document.getElementById('inp_age').value){
+      shake('inp_age'); return;
+    }
+    if(!selectedOpts.sex){
+      alert('Please select your sex'); return;
+    }
+  }
+  if(n===3){
+    if(!document.getElementById('inp_height').value){shake('inp_height');return;}
+    if(!document.getElementById('inp_weight').value){shake('inp_weight');return;}
+    if(!selectedOpts.body){alert('Please select body type');return;}
+  }
+  if(n===4){
+    if(!selectedOpts.goal){alert('Please select a fitness goal');return;}
+    if(!selectedOpts.exp){alert('Please select experience level');return;}
+    if(!selectedOpts.train){alert('Please select training preference');return;}
+  }
+  if(n===5){
+    buildPreview();
+  }
+
+  document.getElementById('step'+currentStep).style.display='none';
+  currentStep=n;
+  document.getElementById('step'+n).style.display='block';
+  document.getElementById('step'+n).style.animation='none';
+  void document.getElementById('step'+n).offsetWidth;
+  document.getElementById('step'+n).style.animation='cardIn 0.4s ease both';
+}
+
+function shake(id){
+  const el = document.getElementById(id);
+  el.style.borderColor='#ef4444';
+  el.style.animation='shake 0.4s ease';
+  setTimeout(()=>{el.style.borderColor='';el.style.animation='';},600);
+}
+
+function buildPreview(){
+  const data = {
+    'NAME': document.getElementById('inp_name').value || '—',
+    'AGE': document.getElementById('inp_age').value + ' yrs' || '—',
+    'SEX': selectedOpts.sex || '—',
+    'HEIGHT': document.getElementById('inp_height').value + ' cm' || '—',
+    'WEIGHT': document.getElementById('inp_weight').value + ' kg' || '—',
+    'BODY TYPE': selectedOpts.body || '—',
+    'GOAL': selectedOpts.goal || '—',
+    'EXPERIENCE': selectedOpts.exp || '—',
+    'TRAINING': selectedOpts.train || '—',
+    'SLEEP': selectedOpts.sleep || '—',
+    'DIET': selectedOpts.diet || '—',
+    'ACTIVITY': selectedOpts.activity || '—',
+  };
+  let html='';
+  for(const [k,v] of Object.entries(data)){
+    html += `<div class="profile-row">
+      <span class="profile-key">${k}</span>
+      <span class="profile-val">${v}</span>
+    </div>`;
+  }
+  document.getElementById('profilePreview').innerHTML=html;
+}
+
+function awaken(){
+  profile = {
+    name: document.getElementById('inp_name').value.trim() || 'HUNTER',
+    age: document.getElementById('inp_age').value,
+    sex: selectedOpts.sex || '—',
+    height: document.getElementById('inp_height').value,
+    weight: document.getElementById('inp_weight').value,
+    body: selectedOpts.body || '—',
+    goal: selectedOpts.goal || '—',
+    exp: selectedOpts.exp || '—',
+    train: selectedOpts.train || '—',
+    sleep: selectedOpts.sleep || '—',
+    diet: selectedOpts.diet || '—',
+    activity: selectedOpts.activity || '—',
+  };
+  localStorage.setItem('hunterProfile', JSON.stringify(profile));
+  loadData();
+  showMain();
+}
+
+// =================== MAIN APP ===================
+function showMain(){
+  document.getElementById('setup').style.display='none';
+  document.getElementById('main').style.display='block';
+  document.getElementById('hunterName').innerText = profile.name.toUpperCase();
+  buildProfileStrip();
+  setProteinTarget();
+  renderQuests();
+  updateUI();
+}
+
+function buildProfileStrip(){
+  const chips = [
+    {label:'AGE', val: profile.age+'yr'},
+    {label:'HEIGHT', val: profile.height+'cm'},
+    {label:'WEIGHT', val: profile.weight+'kg'},
+    {label:'GOAL', val: (profile.goal||'—').split(' ')[0]},
+    {label:'TYPE', val: (profile.body||'—').substring(0,4)},
+    {label:'DIET', val: (profile.diet||'—').substring(0,3)},
+  ];
+  let html='';
+  chips.forEach(c=>{
+    if(c.val && c.val!=='—cm' && c.val!=='—kg' && c.val!=='—yr'){
+      html+=`<div class="profile-chip">
+        <div class="chip-label">${c.label}</div>
+        <div class="chip-val">${c.val}</div>
+      </div>`;
+    }
+  });
+  document.getElementById('profileStrip').innerHTML=html;
+}
+
+function setProteinTarget(){
+  const w = parseFloat(profile.weight) || 70;
+  const p = Math.round(w * 2);
+  document.getElementById('proteinStat').innerText = p+'g';
+}
+
+function renderQuests(){
+  const list = document.getElementById('questList');
+  list.innerHTML='';
+  for(const key in targets){
+    const val = state.quests[key];
+    const target = targets[key];
+    const pct = Math.min((val/target)*100,100);
+    const meta = questMeta[key];
+    const isDone = val>=target;
+    list.innerHTML+=`
+    <div class="quest ${isDone?'done-quest':''}">
+      <div class="quest-header">
+        <div class="quest-name">${meta.icon} ${meta.label}</div>
+        <div class="quest-badge">${isDone?'✓ DONE':meta.unit}</div>
+      </div>
+      <div class="quest-progress">${val} / ${target} ${meta.unit}</div>
+      <div class="quest-bar">
+        <div class="quest-fill ${isDone?'full':''}" style="width:${pct}%"></div>
+      </div>
+      ${!isDone?`<div class="quest-actions">
+        <button class="quest-btn" onclick="addProgress('${key}',10)">+10</button>
+        <button class="quest-btn" onclick="addProgress('${key}',25)">+25</button>
+        <button class="quest-btn big" onclick="addProgress('${key}',50)">+50</button>
+      </div>`:''}
+    </div>`;
+  }
+  checkComplete();
+
+  // Update completion stat
+  let done=0;
+  for(const key in targets){
+    if(state.quests[key]>=targets[key]) done++;
+  }
+  const pct = Math.round((done/Object.keys(targets).length)*100);
+  document.getElementById('completionStat').innerText = pct+'%';
+}
+
+function addProgress(type, amt){
+  state.quests[type] = Math.min(state.quests[type]+amt, targets[type]);
+  saveData();
+  renderQuests();
+}
+
+function checkComplete(){
+  let done=true;
+  for(const key in targets){
+    if(state.quests[key]<targets[key]){done=false;}
+  }
+  document.getElementById('completeBtn').style.display = done?'block':'none';
+}
+
+function completeDay(){
+  const gainedXP = 100 + (state.level*10);
+  state.xp += gainedXP;
+  const xpNeeded = state.level * 100;
+  let leveledUp = false;
+  if(state.xp >= xpNeeded){
+    state.xp -= xpNeeded;
+    state.level++;
+    leveledUp=true;
+  }
+  state.day++;
+  state.quests={pushups:0,situps:0,squats:0,running:0,plank:0};
+  saveData();
   updateUI();
   renderQuests();
 
