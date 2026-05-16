@@ -726,3 +726,19 @@ document.addEventListener('DOMContentLoaded',()=>{
     allowfullscreen>
   </iframe>
 </div>
+<script>
+function savePage(page){
+    localStorage.setItem("lastPage", page);
+}
+
+window.onload = function(){
+    const savedPage = localStorage.getItem("lastPage");
+
+    if(savedPage){
+        window.location.href = savedPage;
+    }
+}
+</script>
+
+</body>
+</html>
